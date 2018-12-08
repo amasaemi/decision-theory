@@ -1,0 +1,36 @@
+{
+    // компиляция при сохранении
+    "compileOnSave": false,
+    "compilerOptions": {
+      // на выходе получаем ES5-код
+      "target": "esnext",
+      // на выходе модули импортируются через require
+      "module": "commonjs",
+      // создание соответствующего .d.ts файла
+      // "declaration": true,
+      // соединение и компиляция всех файлов в один
+      // "outFile": "./dist/js/bundle.js",
+      // создание иерархии выходной директории
+       "outDir": "./dist/",
+      // корневая директория исходников проекта
+       "rootDir": "./src/",
+      // удаление комментариев в скомпилированном файле
+      "removeComments": true,
+      // строготипизированный режим
+      "strict": true,
+      // "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      // генерация source map
+      "sourceMap": true,
+      // включение ES7 декораторов
+      "experimentalDecorators": true,
+    },
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  }
