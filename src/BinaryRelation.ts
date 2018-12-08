@@ -21,9 +21,9 @@ export class BinaryRelation {
         // печатаем на экран таблицы бинарных отношений
         this.printBinaryRelationValues(this.arrayOfFields, this.arrayOfBinaryRelationHeaders, this.arrayOfBinaryRelationValues);
 
-        // console.log(this.blocking(this.arrayOfBinaryRelationValues));
-        // console.log(this.dominant(this.arrayOfBinaryRelationValues));
-        // console.log(this.tournament(this.arrayOfBinaryRelationValues, this.arrayOfFields.length))
+        console.log(this.blocking(this.arrayOfBinaryRelationValues));
+        console.log(this.dominant(this.arrayOfBinaryRelationValues));
+        console.log(this.tournament(this.arrayOfBinaryRelationValues, this.arrayOfFields.length))
     }
 
     /**
@@ -61,6 +61,68 @@ export class BinaryRelation {
 
         return localArrayOfBinaryRelationValues;
     }
+    
+    /**
+     * Метод выполняет механизм блокировки и возвращает массив индексов победителей по каждому БО
+     * @param binaryRelationValues 
+     */
+    private blocking(binaryRelationValues: Array<Array<Array<boolean>>>): Array<number> {
+        const leaders: Array<number> = [];
+
+        binaryRelationValues.forEach(binaryRelationTable => {
+            // получаем массив сумм по столбцам
+            const sumOfColumn: Array<number> = binaryRelationTable[0]
+                .map((_c, i) => binaryRelationTable
+                    .map(row => row[i])
+                    .reduce((acc, next) => acc + (next ? 1 : 0), 0));
+            // добавляем в массив индекс минимального элемента среди сумм столбцов
+            leaders.push(sumOfColumn.indexOf(Math.min.apply(null, sumOfColumn)))
+        });
+
+        return leaders;
+    }
+
+    /**
+     * Метод выполняет механизм доминирования и возвращает массив индексов победителей по каждому БО
+     * @param binaryRelationValues 
+     */
+    private dominant(binaryRelationValues: Array<Array<Array<boolean>>>): Array<number> {
+        const leaders: Array<number> = [];
+
+        binaryRelationValues.forEach(binaryRelationTable => {
+            // получаем массив сумм по строкам
+            const sumOfLine: Array<number> = binaryRelationTable
+                .map(line => line
+                    .reduce((acc, next) => acc + (next ? 1 : 0), 0));
+            // добавляем в массив индекс максимального элемента среди сумм строк
+            leaders.push(sumOfLine.indexOf(Math.max.apply(null, sumOfLine)));
+        });
+
+        return leaders;
+    }
+
+    /**
+     * Метод выполняет турнирный механизм и возвращает количество очков каждого участника турнира
+     * @param binaryRelationValues
+     * @param fieldsCount
+     */
+    private tournament(binaryRelationValues: Array<Array<Array<boolean>>>, fieldsCount: number): Array<number> {
+        const tournamentBoard: Array<number> = Array.from({ length: fieldsCount }, () => 0);
+        // для каждого бинарного отношения
+        binaryRelationValues.forEach(binaryRelationTable => {
+            // для каждого элемента столбца
+            binaryRelationTable.forEach((line, i) => {
+                for (let j = 0; j < line.length; j++) {
+                    for (let k = 0; k < line.length; k++) {
+                        // прибавляем 2, если участник выигрывает у текущего соперника, 1 - если ничья, 0 - если проигрывает
+                        tournamentBoard[i] += (line[0] > binaryRelationTable[j][k]) ? 2 : (line[0] == binaryRelationTable[j][k]) ? 1 : 0
+                    }
+                }
+            })
+        });
+
+        return tournamentBoard;
+    }
 
     /**
      * Метод печатает на экран таблицы бинарных отношений
@@ -80,3 +142,4 @@ export class BinaryRelation {
         })
     }
 }
+//meow
