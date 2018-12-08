@@ -85,4 +85,8 @@ arrayOfInputData.push([ 50000, 700000, 1000000, 1000000 ])
 arrayOfInputData.push([ 8, 14, 6, 6 ])
 arrayOfInputData.push([ 1, 8, 2, 2 ])
 
-new BinaryRelation(arrayOfFields, arrayOfBo, arrayOfInputData);
+const binaryRelation = new BinaryRelation(arrayOfFields, arrayOfBo, arrayOfInputData);
+console.log(binaryRelation.blocking())
+console.log(binaryRelation.dominant())
+console.log(binaryRelation.blockingAndDominantCompare())
+console.log(binaryRelation.tournament())

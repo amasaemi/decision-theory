@@ -20,10 +20,6 @@ export class BinaryRelation {
         this.arrayOfBinaryRelationValues = this.fillArrayOfBinaryRelationValues(this.arrayOfInitialData, this.arrayOfBinaryRelationHeaders, this.arrayOfFields.length);
         // печатаем на экран таблицы бинарных отношений
         this.printBinaryRelationValues(this.arrayOfFields, this.arrayOfBinaryRelationHeaders, this.arrayOfBinaryRelationValues);
-
-        console.log(this.blocking(this.arrayOfBinaryRelationValues));
-        console.log(this.dominant(this.arrayOfBinaryRelationValues));
-        console.log(this.tournament(this.arrayOfBinaryRelationValues, this.arrayOfFields.length))
     }
 
     /**
@@ -64,12 +60,11 @@ export class BinaryRelation {
     
     /**
      * Метод выполняет механизм блокировки и возвращает массив индексов победителей по каждому БО
-     * @param binaryRelationValues 
      */
-    private blocking(binaryRelationValues: Array<Array<Array<boolean>>>): Array<number> {
+    public blocking(): Array<number> {
         const leaders: Array<number> = [];
 
-        binaryRelationValues.forEach(binaryRelationTable => {
+        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
             // получаем массив сумм по столбцам
             const sumOfColumn: Array<number> = binaryRelationTable[0]
                 .map((_c, i) => binaryRelationTable
@@ -84,12 +79,11 @@ export class BinaryRelation {
 
     /**
      * Метод выполняет механизм доминирования и возвращает массив индексов победителей по каждому БО
-     * @param binaryRelationValues 
      */
-    private dominant(binaryRelationValues: Array<Array<Array<boolean>>>): Array<number> {
+    public dominant(): Array<number> {
         const leaders: Array<number> = [];
 
-        binaryRelationValues.forEach(binaryRelationTable => {
+        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
             // получаем массив сумм по строкам
             const sumOfLine: Array<number> = binaryRelationTable
                 .map(line => line
@@ -103,13 +97,11 @@ export class BinaryRelation {
 
     /**
      * Метод выполняет турнирный механизм и возвращает количество очков каждого участника турнира
-     * @param binaryRelationValues
-     * @param fieldsCount
      */
-    private tournament(binaryRelationValues: Array<Array<Array<boolean>>>, fieldsCount: number): Array<number> {
-        const tournamentBoard: Array<number> = Array.from({ length: fieldsCount }, () => 0);
+    public tournament(): Array<number> {
+        const tournamentBoard: Array<number> = Array.from({ length: this.arrayOfFields.length }, () => 0);
         // для каждого бинарного отношения
-        binaryRelationValues.forEach(binaryRelationTable => {
+        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
             // для каждого элемента столбца
             binaryRelationTable.forEach((line, i) => {
                 for (let j = 0; j < line.length; j++) {
@@ -122,6 +114,21 @@ export class BinaryRelation {
         });
 
         return tournamentBoard;
+    }
+
+    /**
+     * Метод выполняет сравнение механизмов доминирования и блокировки, и возвращает массив индексов совпадений по каждому БО
+     */
+    public blockingAndDominantCompare(): Array<number> {
+        const blck: Array<number> = this.blocking();
+        const dmnt: Array<number> = this.dominant();
+        const leaders: Array<number> = [];
+
+        // если blck[i] и dmnt[i] не равны, на это место присваивается -1
+        for (let i = 0; i < blck.length; i++)
+            leaders.push(blck[i] == dmnt[i] ? blck[i] : -1);
+
+        return leaders;
     }
 
     /**
