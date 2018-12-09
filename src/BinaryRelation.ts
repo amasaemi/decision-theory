@@ -1,5 +1,10 @@
 // http://elib.spbstu.ru/dl/2/v17-1933.pdf/download/v17-1933.pdf
 
+export interface TournamentRecord {
+    field: string, 
+    value: number
+}
+
 export class BinaryRelation {
     // массив входных полей (D)
     private arrayOfFields: Array<string> = [];
@@ -28,7 +33,7 @@ export class BinaryRelation {
      * @param binaryRelationsHeaders
      * @param fieldsCount 
      */
-    private fillArrayOfBinaryRelationValues(initialData: Array<Array<number>>, binaryRelationsHeaders: Array<{ brName: string, compareParam: number }>, fieldsCount: number): Array<Array<Array<boolean>>> {
+    private fillArrayOfBinaryRelationValues(initialData: Array<Array<number>>, binaryRelationsHeaders: Array<{ brName: string, sign: number, compareParam: number }>, fieldsCount: number): Array<Array<Array<boolean>>> {
         const localArrayOfBinaryRelationValues: Array<Array<Array<boolean>>> = [];
 
         binaryRelationsHeaders.forEach((binaryRelation, i) => {
@@ -61,17 +66,17 @@ export class BinaryRelation {
     /**
      * Метод выполняет механизм блокировки и возвращает массив индексов победителей по каждому БО
      */
-    public blocking(): Array<{ field: string, value: number }> {
-        const leaders: Array<{ field: string, value: number }> = [];
+    public blocking(): Array<number> {
+        const leaders: Array<number> = [];
 
-        this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, brIndex) => {
+        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
             // получаем массив сумм по столбцам
             const sumOfColumn: Array<number> = binaryRelationTable[0]
                 .map((_c, i) => binaryRelationTable
                     .map(row => row[i])
                     .reduce((acc, next) => acc + (next ? 1 : 0), 0));
             // добавляем в массив индекс минимального элемента среди сумм столбцов
-            leaders.push({ field: this.arrayOfFields[brIndex], value: sumOfColumn.indexOf(Math.min.apply(null, sumOfColumn)) })
+            leaders.push(sumOfColumn.indexOf(Math.min.apply(null, sumOfColumn)))
         });
 
         return leaders;
@@ -80,16 +85,16 @@ export class BinaryRelation {
     /**
      * Метод выполняет механизм доминирования и возвращает массив индексов победителей по каждому БО
      */
-    public dominant(): Array<{ field: string, value: number }> {
-        const leaders: Array<{ field: string, value: number }> = [];
+    public dominant(): Array<number> {
+        const leaders: Array<number> = [];
 
-        this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, brIndex) => {
+        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
             // получаем массив сумм по строкам
             const sumOfLine: Array<number> = binaryRelationTable
                 .map(line => line
                     .reduce((acc, next) => acc + (next ? 1 : 0), 0));
             // добавляем в массив индекс максимального элемента среди сумм строк
-            leaders.push({ field: this.arrayOfFields[brIndex], value: sumOfLine.indexOf(Math.max.apply(null, sumOfLine)) });
+            leaders.push(sumOfLine.indexOf(Math.max.apply(null, sumOfLine)));
         });
 
         return leaders;
@@ -98,14 +103,14 @@ export class BinaryRelation {
     /**
      * Метод выполняет сравнение механизмов доминирования и блокировки, и возвращает массив индексов совпадений по каждому БО
      */
-    public blockingAndDominantCompare(): Array<{ field: string, value: number }> {
-        const blck: Array<{ field: string, value: number }> = this.blocking();
-        const dmnt: Array<{ field: string, value: number }> = this.dominant();
-        const leaders: Array<{ field: string, value: number }> = [];
+    public blockingAndDominantCompare(): Array<number> {
+        const blck: Array<number> = this.blocking();
+        const dmnt: Array<number> = this.dominant();
+        const leaders: Array<number> = [];
 
         // если blck[i] и dmnt[i] не равны, на это место присваивается -1
         for (let i = 0; i < blck.length; i++)
-            leaders.push({ field: this.arrayOfFields[i], value: blck[i].value == dmnt[i].value ? blck[i].value : -1 });
+            leaders.push(blck[i] == dmnt[i] ? blck[i] : -1);
 
         return leaders;
     }
@@ -113,8 +118,8 @@ export class BinaryRelation {
     /**
      * Метод выполняет турнирный механизм и возвращает количество очков каждого участника турнира по каждому бо
      */
-    public tournament(): Array<Array<{ field: string, value: number }>> {
-        const tournamentBoard: Array<Array<{ field: string, value: number }>> = [];
+    public tournament(): Array<Array<TournamentRecord>> {
+        const tournamentBoard: Array<Array<TournamentRecord>> = [];
         // для каждого бинарного отношения
         this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, columnIndex) => {
             tournamentBoard.push(Array.from({ length: binaryRelationTable.length }, (_k, v) => { return { field: this.arrayOfFields[v], value: 0 }} ));
@@ -136,8 +141,23 @@ export class BinaryRelation {
     /**
      * Метод выполняет турнирный механизм и возвращает сумму элементов по каждому критерию * на коэффициент значимости
      */
-    public tournamentWithSign(): Array<Array<{ field: string, value: number }>> {
+    public tournamentWithSign(): Array<Array<TournamentRecord>> {
         return this.tournament().map((line, brIndex) => line.map(item => { return { field: item.field, value: Math.ceil(item.value * this.arrayOfBinaryRelationHeaders[brIndex].sign * 100) / 100 } }))
+    }
+
+    /**
+     * Метод выполняет сортировку для tournamentWithSign
+     */
+    public tournamentWithSignSort(): Array<Array<TournamentRecord>> {
+        return this.tournamentWithSign().map(line => line.sort((a, b) => b.value - a.value));
+    }
+
+    /**
+     * Метод возвращает суммарное количество очков каждого участника турнира
+     */
+    public tournamentScores(): Array<TournamentRecord> {
+        const tournamentBoard = this.tournamentWithSign();
+        return tournamentBoard[0].map((_line, i) => tournamentBoard.map(row => row[i])).map(line => { return { field: line[0].field, value: line.reduce((acc, item) => acc + item.value, 0) } })
     }
 
     /**
