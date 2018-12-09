@@ -1,33 +1,11 @@
 import { BinaryRelation } from "./BinaryRelation";
+import { InputJson } from "./InputJson";
 
 // const readline = require('readline-sync');
 
-// массив входных полей (D) и параметр, отвечающий за то, как сравнивать (1 - побеждает
-// большее БО, -1 - побеждаем меньшее БО)
-const arrayOfFields: Array<string> = [];
-// массив заголовков БО (BO)
-const arrayOfBo: Array<{ brName: string, sign: number, compareParam: number }> = [];
-// массив входных данных (D / BO)
-const arrayOfInputData: Array<Array<number>> = [];
+const data: InputJson = require('../input.origin.json')
 
-// fillArrayOfFields();
-// fillArrayOfBo();
-// fillInputDataArray();
-
-arrayOfFields.push('Lada Vesta');
-arrayOfFields.push('Land Cruiser');
-// arrayOfFields.push('Mazeratti12');
-arrayOfFields.push('Mazeratti');
-
-arrayOfBo.push({ brName: 'Price', sign: 0.5, compareParam: -1 })
-arrayOfBo.push({ brName: 'Rashod', sign: 0.4, compareParam: -1 })
-arrayOfBo.push({ brName: 'Eshe parameter', sign: 0.1, compareParam: 1 })
-
-arrayOfInputData.push([ 50000, 700000, 1000000, 1000000 ])
-arrayOfInputData.push([ 8, 14, 6, 6 ])
-arrayOfInputData.push([ 1, 8, 2, 2 ])
-
-const binaryRelation = new BinaryRelation(arrayOfFields, arrayOfBo, arrayOfInputData);
+const binaryRelation = new BinaryRelation(data.fields, data.columns, data.initial_data);
 console.log('\nБлокировка')
 console.log(binaryRelation.blocking())
 console.log('\nДоминирование')
@@ -38,7 +16,7 @@ console.log('\nТурнир')
 console.log(binaryRelation.tournament())
 console.log('\nТурнир * коэффициент')
 console.log(binaryRelation.tournamentWithSign())
-console.log('\nСортированный турнир * коеффициент')
+console.log('\nСортированный турнир * коэффициент')
 console.log(binaryRelation.tournamentWithSignSort())
 console.log('\nСумма очков за турнир')
 console.log(binaryRelation.tournamentScores())

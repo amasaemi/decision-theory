@@ -10,13 +10,13 @@ export class BinaryRelation {
     private arrayOfFields: Array<string> = [];
     // массив заголовков БО (BO), значимость БО и параметров, отвечающих за то, как сравнивать (1 - побеждает
     // большее БО, -1 - побеждаем меньшее БО)
-    private arrayOfBinaryRelationHeaders: Array<{ brName: string, sign: number, compareParam: number }> = [];
+    private arrayOfBinaryRelationHeaders: Array<{ name: string, sign: number, compare_param: number }> = [];
     // массив входных данных (D / BO)
     private arrayOfInitialData: Array<Array<number>> = [];
     // массив массивов бинарных отношений (где индекс первого массива - индекс массива БО)
     private arrayOfBinaryRelationValues: Array<Array<Array<boolean>>> = [];
 
-    public constructor(fields: Array<string>, binaryRelationHeaders: Array<{ brName: string, sign: number, compareParam: number }>, initialData: Array<Array<number>>) {
+    public constructor(fields: Array<string>, binaryRelationHeaders: Array<{ name: string, sign: number, compare_param: number }>, initialData: Array<Array<number>>) {
         this.arrayOfFields = fields;
         this.arrayOfBinaryRelationHeaders = binaryRelationHeaders;
         this.arrayOfInitialData = initialData;
@@ -24,7 +24,7 @@ export class BinaryRelation {
         // заполняем массив бинарных отношений
         this.arrayOfBinaryRelationValues = this.fillArrayOfBinaryRelationValues(this.arrayOfInitialData, this.arrayOfBinaryRelationHeaders, this.arrayOfFields.length);
         // печатаем на экран таблицы бинарных отношений
-        this.printBinaryRelationValues(this.arrayOfFields, this.arrayOfBinaryRelationHeaders, this.arrayOfBinaryRelationValues);
+        this.printBinaryRelationValues(this.arrayOfFields, this.arrayOfBinaryRelationHeaders.map(item => item.name), this.arrayOfBinaryRelationValues);
     }
 
     /**
@@ -33,7 +33,7 @@ export class BinaryRelation {
      * @param binaryRelationsHeaders
      * @param fieldsCount 
      */
-    private fillArrayOfBinaryRelationValues(initialData: Array<Array<number>>, binaryRelationsHeaders: Array<{ brName: string, sign: number, compareParam: number }>, fieldsCount: number): Array<Array<Array<boolean>>> {
+    private fillArrayOfBinaryRelationValues(initialData: Array<Array<number>>, binaryRelationsHeaders: Array<{ name: string, sign: number, compare_param: number }>, fieldsCount: number): Array<Array<Array<boolean>>> {
         const localArrayOfBinaryRelationValues: Array<Array<Array<boolean>>> = [];
 
         binaryRelationsHeaders.forEach((binaryRelation, i) => {
@@ -47,10 +47,10 @@ export class BinaryRelation {
                 for (let k = 0; k < fieldsCount; k++) {
                     // проверка на то, что если (mainCompareValue - MAX + mainCompareValue - MIN) < 0 тогда при равности 2х БО обоим ставить false инчае обоим true
                     const binaryRelationWeight: number = (mainCompareValue - Math.max.apply(null, initialData[i])) + (mainCompareValue - Math.min.apply(null, initialData[i]));
-                    const binaryRelationWeightResult: boolean = (binaryRelation.compareParam < 0) ? binaryRelationWeight < 0 : binaryRelationWeight > 0;
+                    const binaryRelationWeightResult: boolean = (binaryRelation.compare_param < 0) ? binaryRelationWeight < 0 : binaryRelationWeight > 0;
                     // производим сравнение параметров бинарного отношения
                     const currentBinaryRelation: boolean = (mainCompareValue != initialData[i][k]) 
-                        ? (binaryRelation.compareParam < 0)
+                        ? (binaryRelation.compare_param < 0)
                             ? (mainCompareValue < initialData[i][k]) 
                             : (mainCompareValue > initialData[i][k])
                         :  binaryRelationWeightResult;
@@ -121,17 +121,14 @@ export class BinaryRelation {
     public tournament(): Array<Array<TournamentRecord>> {
         const tournamentBoard: Array<Array<TournamentRecord>> = [];
         // для каждого бинарного отношения
-        this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, columnIndex) => {
+        this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, i) => {
             tournamentBoard.push(Array.from({ length: binaryRelationTable.length }, (_k, v) => { return { field: this.arrayOfFields[v], value: 0 }} ));
 
             // для каждого элемента столбца
-            binaryRelationTable.forEach((line, lineIndex) => {
-                for (let j = 0; j < line.length; j++) {
-                    for (let k = 0; k < line.length; k++) {
-                        // прибавляем 2, если участник выигрывает у текущего соперника, 1 - если ничья, 0 - если проигрывает
-                        tournamentBoard[columnIndex][lineIndex].value += (line[0] > binaryRelationTable[j][k]) ? 2 : (line[0] == binaryRelationTable[j][k]) ? 1 : 0
-                    }
-                }
+            binaryRelationTable.forEach((line, j) => {
+                line.forEach((item, k) => tournamentBoard[i][j].value += 
+                    (item > binaryRelationTable[j][k] || item == binaryRelationTable[j][k] && item > binaryRelationTable[k][j]) ? 2
+                        : (item == binaryRelationTable[j][k] && item == binaryRelationTable[k][j]) ? 1 : 0)
             })
         });
 
@@ -142,14 +139,18 @@ export class BinaryRelation {
      * Метод выполняет турнирный механизм и возвращает сумму элементов по каждому критерию * на коэффициент значимости
      */
     public tournamentWithSign(): Array<Array<TournamentRecord>> {
-        return this.tournament().map((line, brIndex) => line.map(item => { return { field: item.field, value: Math.ceil(item.value * this.arrayOfBinaryRelationHeaders[brIndex].sign * 100) / 100 } }))
+        return this.tournament()
+            .map((line, brIndex) => line
+                .map(item => { return { field: item.field, value: Math.ceil(item.value * this.arrayOfBinaryRelationHeaders[brIndex].sign * 100) / 100 } }))
     }
 
     /**
      * Метод выполняет сортировку для tournamentWithSign
      */
     public tournamentWithSignSort(): Array<Array<TournamentRecord>> {
-        return this.tournamentWithSign().map(line => line.sort((a, b) => b.value - a.value));
+        return this.tournamentWithSign()
+            .map(line => line
+                .sort((a, b) => b.value - a.value));
     }
 
     /**
@@ -157,7 +158,11 @@ export class BinaryRelation {
      */
     public tournamentScores(): Array<TournamentRecord> {
         const tournamentBoard = this.tournamentWithSign();
-        return tournamentBoard[0].map((_line, i) => tournamentBoard.map(row => row[i])).map(line => { return { field: line[0].field, value: line.reduce((acc, item) => acc + item.value, 0) } })
+        return tournamentBoard[0]
+            .map((_line, i) => tournamentBoard.map(row => row[i]))
+            .map(line => { return { field: line[0].field, value: line
+                .reduce((acc, item) => acc + item.value, 0) } })
+            .sort((a, b) => b.value - a.value)
     }
 
     /**
@@ -166,9 +171,9 @@ export class BinaryRelation {
      * @param binaryRelationHeaders 
      * @param binaryRelationValues
      */
-    private printBinaryRelationValues(fields: Array<string>, binaryRelationHeaders: Array<{ brName: string, compareParam: number }>, binaryRelationValues: Array<Array<Array<boolean>>>) {
+    private printBinaryRelationValues(fields: Array<string>, binaryRelationHeaders: Array<string>, binaryRelationValues: Array<Array<Array<boolean>>>) {
         binaryRelationValues.forEach((binaryRelationTable, indexOfBinaryRelation) => {
-            console.log(`\nТаблица бинарных отношений для параметра ${binaryRelationHeaders[indexOfBinaryRelation].brName}:`);
+            console.log(`\nТаблица бинарных отношений для параметра ${binaryRelationHeaders[indexOfBinaryRelation]}:`);
 
             console.log(`\t\t\t${fields.join('\t\t')}`);
 
