@@ -126,6 +126,7 @@ export class BinaryRelation {
 
             // для каждого элемента столбца
             binaryRelationTable.forEach((line, j) => {
+                // прибавляем 2, если участник выигрывает у текущего соперника, 1 - если ничья, 0 - если проигрывает
                 line.forEach((item, k) => tournamentBoard[i][j].value += 
                     (item > binaryRelationTable[j][k] || item == binaryRelationTable[j][k] && item > binaryRelationTable[k][j]) ? 2
                         : (item == binaryRelationTable[j][k] && item == binaryRelationTable[k][j]) ? 1 : 0)
