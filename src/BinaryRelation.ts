@@ -3,15 +3,15 @@
 export class BinaryRelation {
     // массив входных полей (D)
     private arrayOfFields: Array<string> = [];
-    // массив заголовков БО (BO) и параметров, отвечающих за то, как сравнивать (1 - побеждает
+    // массив заголовков БО (BO), значимость БО и параметров, отвечающих за то, как сравнивать (1 - побеждает
     // большее БО, -1 - побеждаем меньшее БО)
-    private arrayOfBinaryRelationHeaders: Array<{ brName: string, compareParam: number }> = [];
+    private arrayOfBinaryRelationHeaders: Array<{ brName: string, sign: number, compareParam: number }> = [];
     // массив входных данных (D / BO)
     private arrayOfInitialData: Array<Array<number>> = [];
     // массив массивов бинарных отношений (где индекс первого массива - индекс массива БО)
     private arrayOfBinaryRelationValues: Array<Array<Array<boolean>>> = [];
 
-    public constructor(fields: Array<string>, binaryRelationHeaders: Array<{ brName: string, compareParam: number }>, initialData: Array<Array<number>>) {
+    public constructor(fields: Array<string>, binaryRelationHeaders: Array<{ brName: string, sign: number, compareParam: number }>, initialData: Array<Array<number>>) {
         this.arrayOfFields = fields;
         this.arrayOfBinaryRelationHeaders = binaryRelationHeaders;
         this.arrayOfInitialData = initialData;
@@ -61,17 +61,17 @@ export class BinaryRelation {
     /**
      * Метод выполняет механизм блокировки и возвращает массив индексов победителей по каждому БО
      */
-    public blocking(): Array<number> {
-        const leaders: Array<number> = [];
+    public blocking(): Array<{ field: string, value: number }> {
+        const leaders: Array<{ field: string, value: number }> = [];
 
-        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
+        this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, brIndex) => {
             // получаем массив сумм по столбцам
             const sumOfColumn: Array<number> = binaryRelationTable[0]
                 .map((_c, i) => binaryRelationTable
                     .map(row => row[i])
                     .reduce((acc, next) => acc + (next ? 1 : 0), 0));
             // добавляем в массив индекс минимального элемента среди сумм столбцов
-            leaders.push(sumOfColumn.indexOf(Math.min.apply(null, sumOfColumn)))
+            leaders.push({ field: this.arrayOfFields[brIndex], value: sumOfColumn.indexOf(Math.min.apply(null, sumOfColumn)) })
         });
 
         return leaders;
@@ -80,34 +80,51 @@ export class BinaryRelation {
     /**
      * Метод выполняет механизм доминирования и возвращает массив индексов победителей по каждому БО
      */
-    public dominant(): Array<number> {
-        const leaders: Array<number> = [];
+    public dominant(): Array<{ field: string, value: number }> {
+        const leaders: Array<{ field: string, value: number }> = [];
 
-        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
+        this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, brIndex) => {
             // получаем массив сумм по строкам
             const sumOfLine: Array<number> = binaryRelationTable
                 .map(line => line
                     .reduce((acc, next) => acc + (next ? 1 : 0), 0));
             // добавляем в массив индекс максимального элемента среди сумм строк
-            leaders.push(sumOfLine.indexOf(Math.max.apply(null, sumOfLine)));
+            leaders.push({ field: this.arrayOfFields[brIndex], value: sumOfLine.indexOf(Math.max.apply(null, sumOfLine)) });
         });
 
         return leaders;
     }
 
     /**
-     * Метод выполняет турнирный механизм и возвращает количество очков каждого участника турнира
+     * Метод выполняет сравнение механизмов доминирования и блокировки, и возвращает массив индексов совпадений по каждому БО
      */
-    public tournament(): Array<number> {
-        const tournamentBoard: Array<number> = Array.from({ length: this.arrayOfFields.length }, () => 0);
+    public blockingAndDominantCompare(): Array<{ field: string, value: number }> {
+        const blck: Array<{ field: string, value: number }> = this.blocking();
+        const dmnt: Array<{ field: string, value: number }> = this.dominant();
+        const leaders: Array<{ field: string, value: number }> = [];
+
+        // если blck[i] и dmnt[i] не равны, на это место присваивается -1
+        for (let i = 0; i < blck.length; i++)
+            leaders.push({ field: this.arrayOfFields[i], value: blck[i].value == dmnt[i].value ? blck[i].value : -1 });
+
+        return leaders;
+    }
+
+    /**
+     * Метод выполняет турнирный механизм и возвращает количество очков каждого участника турнира по каждому бо
+     */
+    public tournament(): Array<Array<{ field: string, value: number }>> {
+        const tournamentBoard: Array<Array<{ field: string, value: number }>> = [];
         // для каждого бинарного отношения
-        this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
+        this.arrayOfBinaryRelationValues.forEach((binaryRelationTable, columnIndex) => {
+            tournamentBoard.push(Array.from({ length: binaryRelationTable.length }, (_k, v) => { return { field: this.arrayOfFields[v], value: 0 }} ));
+
             // для каждого элемента столбца
-            binaryRelationTable.forEach((line, i) => {
+            binaryRelationTable.forEach((line, lineIndex) => {
                 for (let j = 0; j < line.length; j++) {
                     for (let k = 0; k < line.length; k++) {
                         // прибавляем 2, если участник выигрывает у текущего соперника, 1 - если ничья, 0 - если проигрывает
-                        tournamentBoard[i] += (line[0] > binaryRelationTable[j][k]) ? 2 : (line[0] == binaryRelationTable[j][k]) ? 1 : 0
+                        tournamentBoard[columnIndex][lineIndex].value += (line[0] > binaryRelationTable[j][k]) ? 2 : (line[0] == binaryRelationTable[j][k]) ? 1 : 0
                     }
                 }
             })
@@ -117,18 +134,10 @@ export class BinaryRelation {
     }
 
     /**
-     * Метод выполняет сравнение механизмов доминирования и блокировки, и возвращает массив индексов совпадений по каждому БО
+     * Метод выполняет турнирный механизм и возвращает сумму элементов по каждому критерию * на коэффициент значимости
      */
-    public blockingAndDominantCompare(): Array<number> {
-        const blck: Array<number> = this.blocking();
-        const dmnt: Array<number> = this.dominant();
-        const leaders: Array<number> = [];
-
-        // если blck[i] и dmnt[i] не равны, на это место присваивается -1
-        for (let i = 0; i < blck.length; i++)
-            leaders.push(blck[i] == dmnt[i] ? blck[i] : -1);
-
-        return leaders;
+    public tournamentWithSign(): Array<Array<{ field: string, value: number }>> {
+        return this.tournament().map((line, brIndex) => line.map(item => { return { field: item.field, value: Math.ceil(item.value * this.arrayOfBinaryRelationHeaders[brIndex].sign * 100) / 100 } }))
     }
 
     /**
@@ -144,9 +153,8 @@ export class BinaryRelation {
             console.log(`\t\t\t${fields.join('\t\t')}`);
 
             fields.forEach((fieldName, indexOfField) => {
-                console.log(fieldName + '\t\t' + binaryRelationTable[indexOfField].join('\t\t\t'));
+                console.log(fieldName + '\t\t' + binaryRelationTable[indexOfField].map(item => item ? 1 : 0).join('\t\t\t'));
             })
         })
     }
 }
-//meow
