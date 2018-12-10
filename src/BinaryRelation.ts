@@ -173,13 +173,20 @@ export class BinaryRelation {
      * @param binaryRelationValues
      */
     private printBinaryRelationValues(fields: Array<string>, binaryRelationHeaders: Array<string>, binaryRelationValues: Array<Array<Array<boolean>>>) {
+        let maxLen: number = fields[0].length;
+
+        fields.forEach((field) => {
+            if (field.length > maxLen) maxLen = field.length;
+        });
+
         binaryRelationValues.forEach((binaryRelationTable, indexOfBinaryRelation) => {
             console.log(`\nТаблица бинарных отношений для параметра ${binaryRelationHeaders[indexOfBinaryRelation]}:`);
 
-            console.log(`\t\t\t${fields.join('\t\t')}`);
+            //TODO При длинных названиях шапка таблицы поедет
+            console.log(`${''.padEnd(maxLen, ' ')}\t\t${fields.join('\t\t')}`);
 
             fields.forEach((fieldName, indexOfField) => {
-                console.log(fieldName + '\t\t' + binaryRelationTable[indexOfField].map(item => item ? 1 : 0).join('\t\t\t'));
+                console.log(fieldName.padEnd(maxLen, ' ') + '\t\t' + binaryRelationTable[indexOfField].map(item => item ? 1 : 0).join('\t\t\t'));
             })
         })
     }
