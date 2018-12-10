@@ -3,20 +3,20 @@ import { InputJson } from "./InputJson";
 
 // const readline = require('readline-sync');
 
-const data: InputJson = require('../input.origin.json')
+const data: InputJson = require('../input.origin.json');
 
 const binaryRelation = new BinaryRelation(data.fields, data.columns, data.initial_data);
-console.log('\nБлокировка')
-console.log(binaryRelation.blocking())
-console.log('\nДоминирование')
-console.log(binaryRelation.dominant())
-console.log('\nБлокировка и доминирование')
-console.log(binaryRelation.blockingAndDominantCompare())
-console.log('\nТурнир')
-console.log(binaryRelation.tournament())
-console.log('\nТурнир * коэффициент')
-console.log(binaryRelation.tournamentWithSign())
-console.log('\nСортированный турнир * коэффициент')
-console.log(binaryRelation.tournamentWithSignSort())
-console.log('\nСумма очков за турнир')
-console.log(binaryRelation.tournamentScores())
+console.log('\nБлокировка');
+console.log(binaryRelation.printLeaders(binaryRelation.blocking()));
+console.log('Доминирование');
+console.log(binaryRelation.printLeaders(binaryRelation.dominant()));
+console.log('Блокировка и доминирование');
+console.log(binaryRelation.printLeaders(binaryRelation.blockingAndDominantCompare()));
+console.log('Турнир');
+console.log(binaryRelation.printTournamentBoard(binaryRelation.tournament()));
+console.log('Турнир * коэффициент');
+console.log(binaryRelation.printTournamentBoard(binaryRelation.tournamentWithSign()));
+console.log('Сортированный турнир * коэффициент');
+console.log(binaryRelation.printTournamentBoard(binaryRelation.tournamentWithSignSort()));
+console.log('Сумма очков за турнир');
+console.log(binaryRelation.printTournametnScore(binaryRelation.tournamentScores()));

@@ -15,12 +15,28 @@ export class BinaryRelation {
     private arrayOfInitialData: Array<Array<number>> = [];
     // массив массивов бинарных отношений (где индекс первого массива - индекс массива БО)
     private arrayOfBinaryRelationValues: Array<Array<Array<boolean>>> = [];
+    // Максимальная длина поля
+    private maxFieldLength: number;
+    // Максимальная длина названий БО
+    private maxBRLength: number;
 
     public constructor(fields: Array<string>, binaryRelationHeaders: Array<{ name: string, sign: number, compare_param: number }>, initialData: Array<Array<number>>) {
         this.arrayOfFields = fields;
         this.arrayOfBinaryRelationHeaders = binaryRelationHeaders;
         this.arrayOfInitialData = initialData;
-        
+
+        // Находим максимальную длину полей для удобного вывода данных
+        this.maxFieldLength = this.arrayOfFields[0].length;
+        this.arrayOfFields.forEach(field => {
+            if (field.length > this.maxFieldLength) this.maxFieldLength = field.length;
+        });
+
+        // Находимт максимальную длину названий БО для удобного вывода данных
+        this.maxBRLength = this.arrayOfBinaryRelationHeaders[0].name.length;
+        this.arrayOfBinaryRelationHeaders.forEach(header => {
+            if (header.name.length > this.maxBRLength) this.maxBRLength = header.name.length;
+        });
+
         // заполняем массив бинарных отношений
         this.arrayOfBinaryRelationValues = this.fillArrayOfBinaryRelationValues(this.arrayOfInitialData, this.arrayOfBinaryRelationHeaders, this.arrayOfFields.length);
         // печатаем на экран таблицы бинарных отношений
@@ -62,7 +78,7 @@ export class BinaryRelation {
 
         return localArrayOfBinaryRelationValues;
     }
-    
+
     /**
      * Метод выполняет механизм блокировки и возвращает массив индексов победителей по каждому БО
      */
@@ -173,21 +189,70 @@ export class BinaryRelation {
      * @param binaryRelationValues
      */
     private printBinaryRelationValues(fields: Array<string>, binaryRelationHeaders: Array<string>, binaryRelationValues: Array<Array<Array<boolean>>>) {
-        let maxLen: number = fields[0].length;
-
-        fields.forEach((field) => {
-            if (field.length > maxLen) maxLen = field.length;
-        });
-
         binaryRelationValues.forEach((binaryRelationTable, indexOfBinaryRelation) => {
-            console.log(`\nТаблица бинарных отношений для параметра ${binaryRelationHeaders[indexOfBinaryRelation]}:`);
+            console.log(`\nТаблица бинарных отношений для параметра "${binaryRelationHeaders[indexOfBinaryRelation]}":`);
 
-            //TODO При длинных названиях шапка таблицы поедет
-            console.log(`${''.padEnd(maxLen, ' ')}\t\t${fields.join('\t\t')}`);
+            let headerSeparator: string = ')    (';
+            let fieldSeparator: string = '    ';
+            let dataSeparator: string = '      ';
+            let fieldsIndexes: number[] = [];
+            fields.forEach((_, i) => fieldsIndexes.push(i));
+
+            console.log(`${''.padEnd(this.maxFieldLength + 3, ' ')}${fieldSeparator}(${fieldsIndexes.join(headerSeparator)})`);
 
             fields.forEach((fieldName, indexOfField) => {
-                console.log(fieldName.padEnd(maxLen, ' ') + '\t\t' + binaryRelationTable[indexOfField].map(item => item ? 1 : 0).join('\t\t\t'));
+                console.log('(' + (indexOfField) + ') ' + fieldName.padEnd(this.maxFieldLength, ' ') + fieldSeparator + binaryRelationTable[indexOfField].map(item => item ? 1 : 0).join(dataSeparator));
             })
         })
+    }
+
+    //TODO Добавить возможность находить и выводить нескольких лидеров
+    /**
+     * Метод создаёт и возращает строку с победителями по каждому БО
+     * @param leaders
+     */
+    public printLeaders(leaders: number[]): string {
+        let output: string = '';
+
+        this.arrayOfBinaryRelationHeaders.forEach((header, i) => {
+            if (leaders[i] != -1)
+                output += '  ' + header.name.padEnd(this.maxBRLength, ' ') + ' : (' + leaders[i] + ') ' + this.arrayOfFields[leaders[i]] + '\n';
+            else
+                output += '  ' + header.name.padEnd(this.maxBRLength, ' ') + ' :  -\n';
+        });
+
+        return output;
+    }
+
+    /**
+     * Метод создаёт и возращает строку с данными турнира
+     * @param tournamentBoard
+     */
+    public printTournamentBoard(tournamentBoard: Array<Array<TournamentRecord>>): string {
+        let output: string = '';
+
+        tournamentBoard.forEach((binaryRelation, i) => {
+            output += this.arrayOfBinaryRelationHeaders[i].name + '\n';
+
+            binaryRelation.forEach((result) => {
+                output += '  (' + this.arrayOfFields.indexOf(result.field) + ') ' + result.field.padEnd(this.maxFieldLength, ' ') + ' - ' + result.value + '\n';
+            })
+        });
+
+        return output;
+    }
+
+    /**
+     * Метод создаёт и возращает строку с суммой очков турнира
+     * @param tournamentScore
+     */
+    public printTournametnScore(tournamentScore: Array<TournamentRecord>) {
+        let output: string = '';
+
+        tournamentScore.forEach((result) => {
+            output += '(' + this.arrayOfFields.indexOf(result.field) + ') ' + result.field.padEnd(this.maxFieldLength, ' ') + ' - ' + result.value + '\n';
+        });
+
+        return output;
     }
 }
