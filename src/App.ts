@@ -1,9 +1,7 @@
 import { BinaryRelation } from "./BinaryRelation";
 import { InputJson } from "./InputJson";
 
-// const readline = require('readline-sync');
-
-const data: InputJson = require('../input.origin.json');
+const data: InputJson = require(`../${process.argv[2]}`);
 
 const binaryRelation = new BinaryRelation(data.fields, data.columns, data.initial_data);
 console.log('\nБлокировка');
