@@ -18,3 +18,4 @@ console.log('Сортированный турнир * коэффициент');
 console.log(binaryRelation.printTournamentBoard(binaryRelation.tournamentWithSignSort()));
 console.log('Сумма очков за турнир');
 console.log(binaryRelation.printTournametnScore(binaryRelation.tournamentScores()));
+console.log(binaryRelation.kMax());

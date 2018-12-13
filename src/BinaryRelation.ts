@@ -65,9 +65,9 @@ export class BinaryRelation {
                     const binaryRelationWeight: number = (mainCompareValue - Math.max.apply(null, initialData[i])) + (mainCompareValue - Math.min.apply(null, initialData[i]));
                     const binaryRelationWeightResult: boolean = (binaryRelation.compare_param < 0) ? binaryRelationWeight < 0 : binaryRelationWeight > 0;
                     // производим сравнение параметров бинарного отношения
-                    const currentBinaryRelation: boolean = (mainCompareValue != initialData[i][k]) 
+                    const currentBinaryRelation: boolean = (mainCompareValue != initialData[i][k])
                         ? (binaryRelation.compare_param < 0)
-                            ? (mainCompareValue < initialData[i][k]) 
+                            ? (mainCompareValue < initialData[i][k])
                             : (mainCompareValue > initialData[i][k])
                         :  binaryRelationWeightResult;
                     // добавляем значение бинарного отношения в массив бинарных отношений
@@ -180,6 +180,43 @@ export class BinaryRelation {
             .map(line => { return { field: line[0].field, value: line
                 .reduce((acc, item) => acc + item.value, 0) } })
             .sort((a, b) => b.value - a.value)
+    }
+
+    /**
+     * Метот считает и возвращает параметр S для всех элеметнов для всех БО
+     */
+    public kMax(): Array<Array<Array<number>>> {
+        let H: number[] = [];
+        let N: number[] = [];
+        let E: number[] = [];
+        let S: Array<Array<Array<number>>> = [];
+
+        this.arrayOfBinaryRelationValues.forEach((binaryRelation, i) => {
+            S.push([]);
+
+            binaryRelation.forEach((field, j) => {
+                H = [];
+                N = [];
+                E = [];
+
+                field.forEach((item, k) => {
+
+                    if (k != j) {
+                        if (item == true) {
+                            if (binaryRelation[k][j] == true)
+                                E.push(k);
+                            else
+                                H.push(k);
+                        } else if (binaryRelation[k][j] == false)
+                                N.push(k);
+                    }
+                });
+
+                S[i].push([H.length + N.length + E.length, H.length + N.length, H.length + E.length, H.length]);
+            })
+        });
+
+        return S;
     }
 
     /**
