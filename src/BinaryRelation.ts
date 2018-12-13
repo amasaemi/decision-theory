@@ -185,7 +185,7 @@ export class BinaryRelation {
     /**
      * Метот считает и возвращает параметр S для всех элеметнов для всех БО
      */
-    public kMax(): Array<Array<Array<number>>> {
+    public calculateS(): Array<Array<Array<number>>> {
         let H: number[] = [];
         let N: number[] = [];
         let E: number[] = [];
@@ -193,7 +193,7 @@ export class BinaryRelation {
 
         this.arrayOfBinaryRelationValues.forEach((binaryRelation, i) => {
             S.push([]);
-
+            S[i].push([], [], [], []);
             binaryRelation.forEach((field, j) => {
                 H = [];
                 N = [];
@@ -212,11 +212,33 @@ export class BinaryRelation {
                     }
                 });
 
-                S[i].push([H.length + N.length + E.length, H.length + N.length, H.length + E.length, H.length]);
+                // Столбец - вариант, строка - S (1, 2, 3, 4)
+                S[i][0].push(H.length + N.length + E.length);
+                S[i][1].push(H.length + N.length);
+                S[i][2].push(H.length + E.length);
+                S[i][3].push(H.length);
             })
         });
 
         return S;
+    }
+
+    /**
+     * Метод находим максимум каждого S и выводит строку со всей информацией
+     * @param S
+     */
+    public printSMax(S: Array<Array<Array<number>>>): string {
+        let output: string = '';
+
+        S.forEach((relation, i) => {
+            output += this.arrayOfBinaryRelationHeaders[i].name + ':\n';
+            output += '  S1 max = ' + Math.max(...relation[0]) + ' - (' + relation[0].indexOf(Math.max(...relation[0])) + ')\n';
+            output += '  S2 max = ' + Math.max(...relation[1]) + ' - (' + relation[1].indexOf(Math.max(...relation[1])) + ')\n';
+            output += '  S3 max = ' + Math.max(...relation[2]) + ' - (' + relation[2].indexOf(Math.max(...relation[2])) + ')\n';
+            output += '  S4 max = ' + Math.max(...relation[3]) + ' - (' + relation[3].indexOf(Math.max(...relation[3])) + ')\n';
+        });
+
+        return output;
     }
 
     /**
