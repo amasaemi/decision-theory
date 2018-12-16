@@ -90,9 +90,9 @@ export class BinaryRelation {
             const sumOfColumn: Array<number> = binaryRelationTable[0]
                 .map((_c, i) => binaryRelationTable
                     .map(row => row[i])
-                    .reduce((acc, next) => acc + (next ? 1 : 0), 0));
-            // добавляем в массив индекс минимального элемента среди сумм столбцов
-            leaders.push(sumOfColumn.indexOf(Math.min.apply(null, sumOfColumn)))
+                    .reduce((acc, next, j) => acc + ((!next || j == i) ? 1 : 0), 0));
+            // добавляем в массив индекс элемента состоящего из одних нулей
+            leaders.push((Math.max.apply(null, sumOfColumn) == binaryRelationTable[0].length) ? sumOfColumn.indexOf(binaryRelationTable[0].length) : -1)
         });
 
         return leaders;
@@ -107,10 +107,10 @@ export class BinaryRelation {
         this.arrayOfBinaryRelationValues.forEach(binaryRelationTable => {
             // получаем массив сумм по строкам
             const sumOfLine: Array<number> = binaryRelationTable
-                .map(line => line
-                    .reduce((acc, next) => acc + (next ? 1 : 0), 0));
-            // добавляем в массив индекс максимального элемента среди сумм строк
-            leaders.push(sumOfLine.indexOf(Math.max.apply(null, sumOfLine)));
+                .map((line, i) => line
+                    .reduce((acc, next, j) => acc + ((next || j == i) ? 1 : 0), 0));
+            // добавляем в массив индекс элемента состоящего из одних единиц
+            leaders.push((Math.max.apply(null, sumOfLine) == binaryRelationTable[0].length) ? sumOfLine.indexOf(binaryRelationTable[0].length) : -1);
         });
 
         return leaders;
