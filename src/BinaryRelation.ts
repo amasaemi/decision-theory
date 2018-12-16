@@ -232,10 +232,10 @@ export class BinaryRelation {
 
         S.forEach((relation, i) => {
             output += this.arrayOfBinaryRelationHeaders[i].name + ':\n';
-            output += '  S1 max = ' + Math.max(...relation[0]) + ' - (' + relation[0].indexOf(Math.max(...relation[0])) + ')\n';
-            output += '  S2 max = ' + Math.max(...relation[1]) + ' - (' + relation[1].indexOf(Math.max(...relation[1])) + ')\n';
-            output += '  S3 max = ' + Math.max(...relation[2]) + ' - (' + relation[2].indexOf(Math.max(...relation[2])) + ')\n';
-            output += '  S4 max = ' + Math.max(...relation[3]) + ' - (' + relation[3].indexOf(Math.max(...relation[3])) + ')\n';
+            output += `S1 max - ${Math.max(...relation[0])}, вариант: ${this.arrayOfFields[relation[0].indexOf(Math.max(...relation[0]))]} (${relation[0].indexOf(Math.max(...relation[0]))})\n`;
+            output += `S2 max - ${Math.max(...relation[1])}, вариант: ${this.arrayOfFields[relation[1].indexOf(Math.max(...relation[1]))]} (${relation[1].indexOf(Math.max(...relation[1]))})\n`;
+            output += `S3 max - ${Math.max(...relation[2])}, вариант: ${this.arrayOfFields[relation[2].indexOf(Math.max(...relation[2]))]} (${relation[2].indexOf(Math.max(...relation[2]))})\n`;
+            output += `S4 max - ${Math.max(...relation[3])}, вариант: ${this.arrayOfFields[relation[3].indexOf(Math.max(...relation[3]))]} (${relation[3].indexOf(Math.max(...relation[3]))})\n`;
         });
 
         return output;
