@@ -236,6 +236,7 @@ export class BinaryRelation {
             output += `S2 max - ${Math.max(...relation[1])}, вариант: ${this.arrayOfFields[relation[1].indexOf(Math.max(...relation[1]))]} (${relation[1].indexOf(Math.max(...relation[1]))})\n`;
             output += `S3 max - ${Math.max(...relation[2])}, вариант: ${this.arrayOfFields[relation[2].indexOf(Math.max(...relation[2]))]} (${relation[2].indexOf(Math.max(...relation[2]))})\n`;
             output += `S4 max - ${Math.max(...relation[3])}, вариант: ${this.arrayOfFields[relation[3].indexOf(Math.max(...relation[3]))]} (${relation[3].indexOf(Math.max(...relation[3]))})\n`;
+            if (Math.max(...relation[0]) == this.arrayOfFields.length - 1) output += 'S - глобальное\n';
         });
 
         return output;
